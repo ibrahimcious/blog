@@ -12,6 +12,12 @@ export default defineConfig({
 	},
 	integrations: [mdx()],
 	output: "server",
+	// The site does not use Astro.session. Use an in-memory driver so deploys
+	// need no KV namespace. If sessions are ever used, switch to the adapter's
+	// default Cloudflare KV binding and provision a "SESSION" namespace.
+	session: {
+		driver: { entrypoint: "unstorage/drivers/memory" },
+	},
 	adapter: cloudflare({
 		wasmModuleImports: true,
 	}),
