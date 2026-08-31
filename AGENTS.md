@@ -38,7 +38,7 @@ bun run format       # Format all files with Biome
 
 ## Architecture
 
-This is an Astro-based personal website deployed to Cloudflare Workers with server-side rendering. The active Worker script is `sanju`.
+This is an Astro-based personal website deployed to Cloudflare Workers with server-side rendering. The active Worker script is `blog`.
 
 ## Deployment
 
@@ -46,7 +46,7 @@ Use Workers, not Pages, for production deploys.
 
 ```bash
 bun run build
-bunx wrangler deploy --name sanju
+bunx wrangler deploy --name blog
 ```
 
 The Astro Cloudflare adapter emits server output in `dist/server` and static assets in `dist/client`. `wrangler.jsonc` uses the Cloudflare adapter entrypoint, and deploys follow the generated `dist/server/wrangler.json`.

@@ -92,7 +92,7 @@ function buildSvg(title: string, section: string): string {
   <circle cx="72" cy="60" r="6" fill="${accent}"/>
   <text x="90" y="68" fill="#a3a3a3" font-family="${FONT_FAMILY}" font-size="24">${escapeXml(section)}</text>
   <text x="60" y="${titleY}" fill="#ffffff" font-family="${FONT_FAMILY}" font-size="${fontSize}" font-weight="400" letter-spacing="-0.5">${titleTspans}</text>
-  <text x="60" y="586" fill="#a3a3a3" font-family="${FONT_FAMILY}" font-size="24">sanju.sh</text>
+  <text x="60" y="586" fill="#a3a3a3" font-family="${FONT_FAMILY}" font-size="24">blog.ibrahimaji.workers.dev</text>
   <rect x="1020" y="577" width="120" height="6" rx="3" fill="${accent}"/>
 </svg>`;
 }

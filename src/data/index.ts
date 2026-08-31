@@ -1,13 +1,13 @@
-export const SITE_TITLE = "Sanju's Space";
+export const SITE_TITLE = "ibrahim aji";
 export const SITE_DESCRIPTION =
-	"sanju sivalingam — designer and founder of thisux. writing on product, design, and building software that works.";
-export const SITE_URL = "https://sanju.sh";
+	"ibrahim aji — civil servant by day, self-taught developer by night. building tools to make government data work better, and writing about it.";
+export const SITE_URL = "https://blog.ibrahimaji.workers.dev";
 export const SITE_IMAGE = "/images/ogimage.png";
-export const TWITTER_HANDLE = "@spikeysanju";
-export const AUTHOR_NAME = "Sanju Sivalingam";
-export const AUTHOR_JOB_TITLE = "designer, founder";
-export const AUTHOR_IMAGE = "/images/sanju.png";
-export const AUTHOR_EMAIL = "work@sanju.sh";
+export const TWITTER_HANDLE = "@ibrahimcious";
+export const AUTHOR_NAME = "Ibrahim Aji";
+export const AUTHOR_JOB_TITLE = "developer, civil servant";
+export const AUTHOR_IMAGE = "/images/ibrahim.svg";
+export const AUTHOR_EMAIL = "ibrahimcious@gmail.com";
 
 /** stable schema.org @id for the person entity */
 export const PERSON_ID = `${SITE_URL}/#person`;
@@ -20,7 +20,7 @@ export interface MenuItem {
 
 export const menuItems: MenuItem[] = [
 	{
-		label: "sanju",
+		label: "ibrahim",
 		url: "/",
 	},
 	{
@@ -35,56 +35,16 @@ export const menuItems: MenuItem[] = [
 
 export const products = [
 	{
-		name: "ThisUX",
-		url: "https://thisux.com",
-		image: "/products/thisux.png",
-	},
-	{
-		name: "DunSocial",
-		url: "https://dunsocial.com",
-		image: "/products/dunsocial.png",
-	},
-	{
-		name: "SticAI",
-		url: "https://sticai.com",
-		image: "/products/sticai.png",
-	},
-	{
-		name: "unitedby.ai",
-		url: "https://unitedby.ai",
-		image: "/products/unitedbyai.png",
-	},
-	{
-		name: "DroidClaw",
-		url: "https://droidclaw.ai",
-		image: "/products/droidclaw.png",
-	},
-	{
-		name: "DunTasks",
-		url: "https://duntasks.com",
-		image: "/products/duntasks.png",
-	},
-	{
-		name: "Fli.so",
-		url: "https://github.com/thisuxhq/fli.so",
-		image: "/products/fli.png",
-	},
-	{
-		name: "Dun",
-		url: "https://dunsuite.com",
-		image: "/products/dun.png",
-	},
-	{
-		name: "Uiino",
-		url: "https://uiino.com",
-		image: "/products/uiino.png",
+		name: "SIVERINA",
+		url: "https://siverina.pasuruankab.go.id",
+		image: "/products/siverina.svg",
 	},
 ];
 
 export const socialLinks = [
 	{
 		label: "@x",
-		url: "https://x.com/spikeysanju",
+		url: "https://x.com/ibrahimcious",
 		me: true,
 	},
 	{
@@ -94,12 +54,12 @@ export const socialLinks = [
 	},
 	{
 		label: "github",
-		url: "https://github.com/spikeysanju",
+		url: "https://github.com/ibrahimcious",
 		me: true,
 	},
 	{
-		label: "linkedin",
-		url: "https://www.linkedin.com/in/imsanju",
+		label: "instagram",
+		url: "https://instagram.com/ibrahimcious",
 		me: true,
 	},
 ];

@@ -50,9 +50,8 @@ export function personJsonLd(imageOrigin?: string | URL) {
 		email: AUTHOR_EMAIL,
 		sameAs,
 		worksFor: {
-			"@type": "Organization",
-			name: "ThisUX",
-			url: "https://thisux.com",
+			"@type": "GovernmentOrganization",
+			name: "Bapenda Kabupaten Pasuruan",
 		},
 	};
 }

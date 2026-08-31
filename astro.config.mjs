@@ -5,13 +5,10 @@ import { defineConfig } from "astro/config";
 
 // https://astro.build/config
 export default defineConfig({
-	site: "https://sanju.sh",
+	site: "https://blog.ibrahimaji.workers.dev",
 	trailingSlash: "never",
 	vite: {
 		plugins: [tailwindcss()],
-		server: {
-			allowedHosts: ["frederick-east-surfing-beam.trycloudflare.com"],
-		},
 	},
 	integrations: [mdx()],
 	output: "server",

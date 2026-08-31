@@ -1,0 +1,59 @@
+---
+title: "Building a Tax Incentive System for a Regency Government"
+description: "how siverina, a groundwater-tax incentive system for a regency government, got built: regulation-driven rules, an ai pair, a local database that played dead, and a server i couldn't see."
+pubDate: 'Aug 31 2026'
+---
+
+Siverina takes applications for a groundwater tax (Pajak Air Tanah) incentive in Kabupaten Pasuruan, Indonesia. If your company pays the tax, you can ask for a 30 to 75 percent cut, and the exact number falls out of a formula scored by four government evaluators: environmental compliance, spatial planning, local hiring, and your tax payment history.
+
+None of that is my invention. It all comes from a real regulation, Peraturan Bupati Nomor 36 Tahun 2026, signed by the regent and live since August 1, 2026. I keep bringing it up because it shaped everything. Almost every rule in the app traces back to a specific line in that document, and the numbers behind the scoring live somewhere the office can adjust them directly, so a change to the regulation doesn't have to mean a change to the code.
+
+I run data and information management at Bapenda, the office that actually hands out this incentive, and tax base work is part of my job. So when the regulation was being finalised, building the thing to process applications wasn't a job we handed to a vendor. It was just something we needed, and I was the person who could type it. I'm self-taught, and my job description is mostly coordination, spreadsheets, and reports. It says nothing about running a web app for a government office. These two halves of my week have never overlapped this hard.
+
+## Building it with an AI pair
+
+I built this with an AI pair, and I'd rather say that up front than be coy about it. The interesting part was never "AI wrote code", it was watching who ended up doing what.
+
+I handled the half that needed judgement: turning the regulation into rules, working out what the four evaluators are really measuring, mapping how a case moves from one desk to the next. The AI handled the mechanical half once a change was pinned down, and it was genuinely fast at that. Early on I gave it too much room and paid for it, because code that looks completely reasonable can still have quietly moved a number it had no business touching. After a few of those the rhythm settled: I describe the rule and why it's the rule in plain words, it drafts the change against that, and I keep a written note of why the result is right. The things it couldn't help with were never technical. They were the ones waiting on a person to make a call.
+
+## The database that played dead
+
+A few weeks in, I restarted my local dev environment and the database looked empty. Not corrupted, not half there. Just blank, like it had quietly wiped itself overnight.
+
+It hadn't, as it turned out. I'd set up local storage for the database in a way that felt transparent, the data sitting right there in the project folder where I could see it. On my particular setup, that arrangement reconnects badly after a restart, so the database would come back up pointing at what looked like empty space. The fix was small and boring: hand the job of storing that data to the tooling that is actually built for it, instead of trying to be clever about where the files sat.
+
+It's a textbook case of a problem that stays invisible until the convenient choice meets reality. The same lesson came back later in another form, when a leftover folder from an earlier workaround caused trouble somewhere it had no business reaching, because everything under the project folder gets swept along whether you meant it to or not.
+
+## The file that isn't what it says it is
+
+Applicants attach supporting documents to their case. The first version of my check believed what each file said about itself, which is a mistake, because a file can say whatever it likes. A document can claim to be a PDF while being something else underneath, sometimes by accident and occasionally on purpose.
+
+The version that shipped ignores the label and looks at the file itself to decide what it actually is, then turns away anything where the two don't agree. I won't go into the details here, but the principle is the whole point: trust the contents, not the description.
+
+The same change also added something with nothing to do with safety: a way for applicants to see exactly what they had attached before submitting. That came from watching how things actually go wrong. People don't try to trick their own tax application. They pick the wrong file and don't notice. A gap in the checking and a gap in the interface turned out to have the same root, so I closed both at once.
+
+There was also a related piece of work I chose not to do yet, because it leaned on a rule that had not been formally settled. Not every gap needs closing the moment you see it.
+
+## Deploying to a server I couldn't see
+
+The bugs inside the app I could reason about from my own machine. Deployment was the opposite. It ran on a government office's own server, reached through a VPN, and for the most part I couldn't watch what was happening while it happened.
+
+It fought back in a few unglamorous ways. A configuration problem that made the deploy report success while doing nothing useful. A permissions issue that blocked exactly the logs I needed to work out what had gone wrong, which is its own particular kind of annoying, the part meant to explain the failure being part of the failure. A build-automation quirk that had nothing to do with the actual deployment and still brought everything to a halt.
+
+None of it was interesting. It's the tax you pay for shipping onto infrastructure you don't fully control, and it took more time to get through than anything in the application itself.
+
+## What this taught me
+
+The small, well-defined fixes were where the AI pair earned its place. A clear symptom, a contained change, done in one sitting. That's the kind of work where a fast collaborator adds up.
+
+It did nothing for the piece I deferred. That was never a technical question. It was a question about what the regulation allows and what the office was ready to stand behind, and "the code is easy" doesn't make that kind of decision arrive any sooner.
+
+Building for a taxpayer moves the stakes around. A wrong percentage isn't a cosmetic issue you tidy up later. It's money a business receives or doesn't, and much later someone may have to justify that number against the regulation in detail. That's why the figures live somewhere they can be checked and adjusted deliberately, and why I keep written reasoning for the choices rather than trusting my memory of them.
+
+The thing I didn't expect was how fixed the surroundings are. You get the server you're given. You reach it the way you're allowed to, you can't see all of it, the diagnostics don't always help, and the regulation's start date is not negotiable. The work bends to fit the date. The date never bends to fit the work.
+
+## Where it stands
+
+Siverina is live, taking real applications under the regulation that started on August 1, 2026. Cases come in through the system now instead of as spreadsheets attached to an email, which was the entire point.
+
+A few things are still on my list, including the piece I put off earlier, once the rule behind it is settled. If I started over, I'd be less clever about the boring foundations from day one, and I'd get onto the real server weeks earlier than I did. Past me thought that could wait. Past me was wrong.

@@ -1,23 +1,24 @@
-# sanju.sh
+# ibrahim aji
 
-> personal site of sanju sivalingam — designer, founder of thisux.
-> writing on product, design, and building software that works.
+> personal site of ibrahim aji — civil servant at bapenda kabupaten pasuruan and self-taught developer.
+> writing on government data, self-taught development, and building software that works.
 
 ## site
-- home: https://sanju.sh
-- writings: https://sanju.sh/writings
-- thoughts: https://sanju.sh/thoughts
-- about: https://sanju.sh/me
-- rss: https://sanju.sh/rss.xml
-- sitemap: https://sanju.sh/sitemap-index.xml
+- home: https://blog.ibrahimaji.workers.dev
+- writings: https://blog.ibrahimaji.workers.dev/writings
+- thoughts: https://blog.ibrahimaji.workers.dev/thoughts
+- about: https://blog.ibrahimaji.workers.dev/me
+- rss: https://blog.ibrahimaji.workers.dev/rss.xml
+- sitemap: https://blog.ibrahimaji.workers.dev/sitemap-index.xml
 
 ## author
-- name: Sanju Sivalingam
-- email: work@sanju.sh
-- x: https://x.com/spikeysanju
-- github: https://github.com/spikeysanju
-- linkedin: https://www.linkedin.com/in/imsanju
-- studio: https://thisux.com
+- name: Ibrahim Aji
+- role: Kasubbid Pengelolaan Data dan Informasi, Bapenda Kabupaten Pasuruan
+- email: ibrahimcious@gmail.com
+- x: https://x.com/ibrahimcious
+- github: https://github.com/ibrahimcious
+- instagram: https://instagram.com/ibrahimcious
+- project: https://siverina.pasuruankab.go.id
 
 ## notes
 content is original writing and short-form thoughts.
