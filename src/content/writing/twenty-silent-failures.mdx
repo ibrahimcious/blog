@@ -1,0 +1,105 @@
+---
+title: "Twenty Silent Failures"
+description: "a whatsapp api answered success: true to every request, delivered every message, and attached the wrong file each time. the bug was one word."
+pubDate: 'Sep 3 2026'
+---
+
+We were adding a small feature to [Siverina](/siverina), the service where companies in Kabupaten Pasuruan apply for a groundwater tax incentive. Four agencies review each application. We wanted a reviewer to be able to flag a specific document as wrong — a note, plus an optional photo showing the problem — and have the taxpayer get a WhatsApp about it.
+
+The note was easy. The photo took two days.
+
+## The part that worked immediately
+
+The text notification went out on the first try. A utility template with two body parameters, a name for the greeting and free text for the message, sent through OCA, Telkomsel's WhatsApp Business API provider.
+
+```json
+{ "success": true, "msgid": "c161952a-8657-f309-28e04fc71875" }
+```
+
+It arrived. Good. Now attach the PDF.
+
+## The part that "worked"
+
+WhatsApp templates can carry a media header. You register a template with a document slot, then pass a URL per message and their servers fetch the file. Straightforward. I sent it.
+
+`success: true`. The message arrived. With a file attached. The file was called `File.html`.
+
+Opening it revealed a saved copy of the marketing homepage for default.com, a go-to-market SaaS product with no connection to Indonesian groundwater tax, our server, or anything we had sent. "Modern foundations for go-to-market," it said. Logos for WorkOS, Hebbia, Airbyte.
+
+The API accepted our request, reported success, delivered a message, and attached a stranger's landing page.
+
+That is a genuinely strange failure, and it sent me down four wrong paths before the right one.
+
+## The wrong paths
+
+**The template is broken on the provider's side.** Plausible, because our own project documentation said so. A note in AGENTS.md recorded that this exact template had once shown "Approved" in the dashboard while three real test sends came back Undelivered. Root cause never confirmed. So I believed it, switched templates, and got the identical `File.html` from a second, unrelated template.
+
+**Skip templates, send a plain document message.** The API's own validation errors listed `document` as a supported message type. Passing the URL as `link` got an instant "Document property is not valid." Passing it as `url` made the endpoint hang and return a 504 after sixty seconds. I filed that under "their server is broken" and moved on. It was, in fact, the most important clue I had.
+
+**Our media URL isn't reachable.** Easy to test. I fetched our PDF while spoofing Meta's crawler user-agent: 200, `Content-Type: application/pdf`, correct byte count, no redirect. A missing path returned a proper 404, so there was no soft-404 trick either. The file was fine.
+
+**The provider only accepts media from whitelisted domains.** My worst guess, and I stated it too confidently. A sister agency's internal tool could send PDFs through the same provider, and it hosted files on its own domain, not ours. A domain allowlist fit the evidence neatly. Then the client checked the dashboard: no such setting exists. I had invented a mechanism to explain a symptom.
+
+## What the working implementation showed, and hid
+
+The strongest lead was that sister tool. Same provider, same template, real PDFs delivering. We opened its network tab mid-send and captured two calls: a multipart upload returning a public file URL, then a form post carrying that URL plus recipient and message text.
+
+Genuinely useful, and also a dead end. Both calls went to their own backend. The call that actually mattered, their server to the provider, happened where no browser could see it. We had the shape of the workflow and none of the payload.
+
+At that point I had burned roughly twenty test sends, each one a real WhatsApp message to a real phone, and every single one had returned `success: true`.
+
+## The documentation
+
+Then the client found the provider's API guide, a Word document from 2020, and shared the PDF. Twelve pages. On page nine, a two-row table describing the media object:
+
+```text
+The image, video & document object
+
+  Name     Required   Description
+  ------   --------   -------------------------------------
+  url      Yes        The protocol and URL of the media to be
+                      sent. Use only with HTTP/HTTPS URLs.
+```
+
+One row. One field. Not `link`.
+
+WhatsApp's own Cloud API, the upstream that everyone reads first and that most integration examples online are written against, names this field `link`. I had been writing `link` from memory the entire time, and it had never once produced an error.
+
+## The entire fix
+
+```diff
+- { "type": "document", "document": { "link": mediaUrl } }
++ { "type": "document", "document": { "url":  mediaUrl } }
+```
+
+## Why it failed the way it did
+
+Meta requires a sample media file when you register a template with a media header, so the reviewer can see what the message will look like. Whoever registered these templates had used a saved copy of some webpage as the placeholder.
+
+So the chain was: we send `link`, the provider doesn't recognise that field, no media override is applied, the template goes out with its registered sample, and the taxpayer receives a stranger's landing page. The API reports complete success, because from its point of view a template message was assembled and delivered exactly as configured.
+
+Two different templates produced the identical wrong file for the same reason. That coincidence, which had looked like damning evidence of a provider-wide fault, was just both templates falling back to the same placeholder.
+
+## Verification, at last
+
+The same guide documented an endpoint I hadn't known existed: `GET /api/v2/message/{msgid}/status`, returning `submitted`, `delivered`, `read`, or `failed`. After two days of squinting at a dashboard, actual delivery truth over HTTP. Submitted, then delivered, then read. And the real PDF, on the real phone.
+
+## What I'd take from it
+
+A silent fallback is worse than an error. An unknown field that throws costs you a minute. An unknown field that is ignored, while the request still succeeds and the message still sends, costs you days, because every signal you have says the request was fine. If you're building an API: reject unknown fields.
+
+"Success" from the vendor means the vendor is content. It does not mean the user got what you intended. Any integration that ends at a 200 is untested. Find the status endpoint, the webhook, the receipt, whatever the system uses to describe the outcome rather than the request.
+
+Your own notes can be the trap. Our documented conclusion, "this template is Approved but never delivers", was a reasonable inference from three failed sends, written down honestly, and wrong. It had the same root cause as everything after it, and because it was already settled, it steered me away from the payload for hours. Record the symptom faithfully. Mark the diagnosis as provisional until proven.
+
+Read the vendor's docs, not the upstream's. OCA wraps WhatsApp's Cloud API, and mirrors its structure closely enough that position, parameters and type all matched. The near-identity is what made the one renamed field invisible. When a provider wraps a platform, the wrapper's documentation is the contract, and a twelve-page Word file from 2020 outranked everything I remembered.
+
+The disproven guess was still the useful one. The domain-allowlist theory was wrong, but testing it is what proved our file was served correctly, which eliminated an entire class of cause. Wrong hypotheses earn their keep when they're cheap and falsifiable. State them as guesses, though. I asserted mine as the explanation, and the client had to go check a settings page that didn't exist.
+
+## Postscript
+
+The note in AGENTS.md has been retracted, with the real cause written in its place and a warning about the `link`/`url` trap for whoever hits it next. The status endpoint is documented there now too.
+
+The feature shipped. A reviewer flags a document, writes what's wrong, attaches a photo of it, and the taxpayer's phone buzzes with the note and the actual file, in time to fix it before the monthly cutoff.
+
+*Written up from a debugging session on Siverina, an internal service for Badan Pendapatan Daerah Kabupaten Pasuruan. Template identifiers, message IDs and payload shapes are reproduced as encountered.*
