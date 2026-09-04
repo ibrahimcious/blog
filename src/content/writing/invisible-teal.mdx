@@ -1,0 +1,59 @@
+---
+title: "Invisible Teal"
+description: "a save button on a government tax form stopped existing for one visitor. it hadn't gone anywhere. it had just become the same color as the page underneath it."
+pubDate: 'Sep 4 2026'
+---
+
+Field notes from [Siverina](/siverina), before the write-up gets tidier than the day was.
+
+- **Symptom.** Primary buttons render with no visible background. Plain text links on the same page are unaffected.
+- **Where.** Two unrelated screens: the company profile form (Simpan) and the applications dashboard (Ajukan Baru).
+- **Root cause.** The site's color palette is written in `oklch()`, which older browser engines cannot parse.
+- **Status.** Mechanism confirmed from the build. The reporting device's exact browser version is not yet confirmed.
+
+The feature I'd spent the day on was already live. A new check against the regional tax database now ran on every registration, catching NPWPD numbers that didn't exist before an account got created instead of after. It had shipped, it had been tested against the real API, and the only thing left to do was watch it for a few days.
+
+Then a screenshot came in from a desktop at the tax office. A company profile, filled in completely: name, address, both phone numbers, the location of the water intake the whole form exists to track. Every field had a value. Below the last one, where a Simpan button should have been, there was a card border and then nothing.
+
+## The first read
+
+My first read was scrolling. It's a nine-field form, the button sat left-aligned at the bottom of it, and on a narrow screen that's easy to scroll straight past. I made it full width, gave it a clearer label — "Simpan Profil" instead of "Simpan" — and shipped the change. It felt like the kind of bug that doesn't need a root cause, just a bigger target.
+
+It also wasn't the bug.
+
+## A second sighting
+
+A different screenshot arrived later that day, timestamped 5:30 PM, from the same desk. Different page this time: the dashboard where a taxpayer's applications are listed. The list was empty, which is normal for a new account, and the empty state was doing its job: "Belum ada permohonan. Ajukan permohonan pertama Anda untuk memulai." Below that sentence the page is supposed to show an "Ajukan Baru" button. It didn't. Two lines under where that button should have been, a plain text link, "Lihat tata cara pengajuan", sat there in full view.
+
+Two unrelated pages. Two missing buttons. And on both of them, a plain link right next to the missing button rendered fine.
+
+That ruled out scrolling. I went back through the history of both components. Every version, going back months, renders the button unconditionally: no role check, no "profile complete" gate, nothing that would ever hide it. What the two disappearances had in common wasn't the page. It was the shape of the element. Both missing things were buttons, solid teal background with white text. Both surviving things were plain links, colored text on a white card with no background at all.
+
+## The stylesheet
+
+I pulled up the site's compiled CSS and searched it for the exact classes on that button.
+
+```css
+.bg-teal-700 { background-color: var(--color-teal-700) }
+--color-teal-700: oklch(51.1% .096 186.391);
+--color-white: #fff;
+.text-white { color: var(--color-white) }
+```
+
+The button's background comes from a color written in `oklch()`, a newer CSS color format the framework uses for its entire default palette. Its text comes from a plain hex value, `#fff`, the kind every browser has understood since colors existed on the web.
+
+## Why one survives and one doesn't
+
+`oklch()` needs a browser built after roughly March 2023: Chrome 111, Firefox 113, Safari 15.4. Point an older engine at a CSS custom property it can't parse, and it doesn't round it off to the nearest color it knows. It throws the whole declaration out and falls back to whatever the property's value was before, which for `background-color` is `transparent`, its default state.
+
+Text color has somewhere softer to land. The link that survived on both pages, `text-teal-700`, is written in the same unsupported format and fails in exactly the same way. But `color` isn't `background-color`: drop it and the browser falls back to the page's inherited text color, a dark slate set higher up the document. A link that loses its teal turns the wrong shade of black. A button that loses its teal keeps its white text and loses the only thing that made the white text visible.
+
+## Where it stands
+
+None of this needed access to the machine that showed it to me. The failure reproduces from the stylesheet alone: find the tokens, check which ones resolve to `oklch`, and a button with white text on a teal background explains its own disappearance. What I don't have yet is confirmation that this specific desktop sits on the old side of that March 2023 line. That's one visit to `chrome://version` away, and it's the next thing to check before deciding how far to take the fix.
+
+There are two ways to close this out, and they aren't exclusive. Update the browser on whichever office machines are old enough to hit this, and every color on the site is fixed at once, not just one button. Or give the button its own plain hex fallback that doesn't depend on `oklch` resolving at all, so a machine like this one degrades to correct instead of degrading to invisible. The first is faster. The second doesn't depend on anyone updating anything.
+
+The button was never gone. It was rendered, it was clickable, and it was exactly the same color as the page sitting behind it.
+
+*Siverina. Insentif fiskal Pajak Air Tanah, Bapenda Kabupaten Pasuruan.*
